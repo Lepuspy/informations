@@ -10,11 +10,16 @@ class Discord:
         self.webhock_url = url
         self.icon_url = icon
 
-    def send(self,message):
-        data = json.dumps({"content":message, "username":self.name, "avatar_url":self.icon_url})
-        headers = {'Content-Type': 'application/json'}
-        r = requests.post(self.webhock_url, data=data, headers=headers)
-        print(r)
+    def send(self,message,fileName=None):
+        data = {"content": " " + message + " ", "username":self.name, "avatar_url":self.icon_url}
+        if fileName == None:
+            r = requests.post(self.webhock_url, data=data)
+        else:
+            try:
+                file = {"imageFile": open(fileName, "rb")}
+                r = requests.post(self.webhock_url, data=data, files = file)
+            except:
+                r = requests.post(self.webhock_url, data=data)
         if r.status_code == 204:
             print("正常に送信しました")
         elif r.status_code == 404:
@@ -27,10 +32,17 @@ class Line:
         self.line_token = token
         self.line_notify_api ='https://notify-api.line.me/api/notify'
 
-    def send(self,message):
+    def send(self,message,fileName=None):
         payload={'message': message}
         headers={'Authorization':'Bearer '+ self.line_token}  # 発行したトークン
-        r = requests.post(self.line_notify_api, data=payload, headers=headers)
+        if fileName == None:
+            r = requests.post(self.line_notify_api, data=payload, headers=headers)
+        else:
+            try:
+                file = {"imageFile": open(fileName, "rb")}
+                r = requests.post(self.line_notify_api, data=payload, headers=headers, files = file)
+            except:
+                r = requests.post(self.line_notify_api, data=payload, headers=headers)
         if r.status_code == requests.codes.ok:
             print("正常に送信しました")
         elif r.status_code == 400:
@@ -46,6 +58,8 @@ if __name__ == '__main__':
     url = "WebHockURL"
     d = Discord(url=url,name="test")
     d.send("これはテストです")
+    d.send("これは画像テストです","test.png")
 
     l = Line("Lineトークン")
     l.send("テスト")
+    l.send("画像テスト","test.png")
